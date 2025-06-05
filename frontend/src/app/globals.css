@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Remove default body font-family, rely on Next.js font setup in layout.tsx */
+/*
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+*/
+
+@layer base {
+  :root {
+    --background: 216 100% 96%; /* #EBF4FF */
+    --foreground: 210 20% 25%; /* Dark grayish blue for text */
+
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 210 20% 25%; /* Dark grayish blue text for cards */
+
+    --popover: 0 0% 100%; /* White popovers */
+    --popover-foreground: 210 20% 25%;
+
+    --primary: 215 79% 60%; /* #4A8FE7 */
+    --primary-foreground: 0 0% 100%; /* White */
+
+    --secondary: 216 70% 90%; /* Lighter shade for secondary elements */
+    --secondary-foreground: 215 60% 40%; /* Darker blue for text on secondary */
+
+    --muted: 216 50% 85%;
+    --muted-foreground: 210 20% 45%; /* Grayer text */
+
+    --accent: 171 66% 66%; /* #72E1D1 */
+    --accent-foreground: 200 100% 10%; /* Dark color for text on accent */
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 216 40% 80%;
+    --input: 216 40% 88%;
+    --ring: 215 79% 60%; /* Primary color for focus rings */
+
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+
+    /* Sidebar variables from existing theme, can be overridden if needed */
+    --sidebar-background: 215 30% 98%; /* Slightly off-white, can be adjusted */
+    --sidebar-foreground: 215 25% 25%; /* Darker blue/grey for sidebar text */
+    --sidebar-primary: 215 79% 60%; /* Primary color for active/hover states */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 50% 90%; /* Lighter blue for hover */
+    --sidebar-accent-foreground: 215 70% 30%;
+    --sidebar-border: 215 30% 85%;
+    --sidebar-ring: 215 79% 55%;
+  }
+
+  .dark {
+    --background: 210 20% 10%; /* Dark blue/grey background */
+    --foreground: 210 20% 90%; /* Light grey/blue text */
+
+    --card: 210 20% 15%;
+    --card-foreground: 210 20% 90%;
+
+    --popover: 210 20% 15%;
+    --popover-foreground: 210 20% 90%;
+
+    --primary: 215 70% 65%; /* Slightly lighter primary for dark mode */
+    --primary-foreground: 0 0% 10%;
+
+    --secondary: 210 20% 25%;
+    --secondary-foreground: 210 20% 85%;
+
+    --muted: 210 20% 20%;
+    --muted-foreground: 210 20% 65%;
+
+    --accent: 171 60% 60%; /* Slightly muted accent for dark mode */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 210 20% 30%;
+    --input: 210 20% 25%;
+    --ring: 215 70% 65%;
+
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    --sidebar-background: 210 20% 12%;
+    --sidebar-foreground: 210 15% 88%;
+    --sidebar-primary: 215 70% 65%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 210 20% 20%;
+    --sidebar-accent-foreground: 210 15% 95%;
+    --sidebar-border: 210 20% 25%;
+    --sidebar-ring: 215 70% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
