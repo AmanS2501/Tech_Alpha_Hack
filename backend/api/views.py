@@ -137,6 +137,82 @@ class ResupplyRequestViewSet(viewsets.ModelViewSet):
 class StockMovementViewSet(viewsets.ModelViewSet):
     queryset = StockMovement.objects.all()
     serializer_class = StockMovementSerializer
+    
+    @action(detail=False, methods=['post'])
+    def transfer_stock(self, request):
+        """Transfer stock between locations"""
+        from_location_id = request.data.get('from_location')
+        to_location_id = request.data.get('to_location')
+        batch_id = request.data.get('batch')
+        quantity = int(request.data.get('quantity', 0))
+        notes = request.data.get('notes', '')
+        
+        if quantity <= 0:
+            return Response({'error': 'Quantity must be positive'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            source_inventory = Inventory.objects.get(location_id=from_location_id, batch_id=batch_id)
+            
+            if source_inventory.quantity < quantity:
+                return Response({'error': 'Not enough stock available'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            source_inventory.quantity -= quantity
+            source_inventory.save()
+            
+            dest_inventory, created = Inventory.objects.get_or_create(
+                location_id=to_location_id,
+                batch_id=batch_id,
+                defaults={'quantity': 0, 'status': 'available'}
+            )
+            
+            dest_inventory.quantity += quantity
+            dest_inventory.save()
+            
+            movement = StockMovement.objects.create(
+                inventory=source_inventory,
+                movement_type='transfer',
+                quantity_change=-quantity,  # Negative for outgoing
+                from_location_id=from_location_id,
+                to_location_id=to_location_id,
+                notes=notes,
+                created_by=request.user
+            )
+            
+            return Response({
+                'success': True,
+                'message': f'Successfully transferred {quantity} units',
+                'movement_id': movement.id
+            })
+            
+        except Inventory.DoesNotExist:
+            return Response({'error': 'Source inventory not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['get'])
+    def movement_history(self, request):
+        """Get movement history for a specific batch or location"""
+        batch_id = request.query_params.get('batch')
+        location_id = request.query_params.get('location')
+        days = int(request.query_params.get('days', 30))
+        
+        from django.utils import timezone
+        from datetime import timedelta
+        start_date = timezone.now() - timedelta(days=days)
+        
+        queryset = StockMovement.objects.filter(created_at__gte=start_date)
+        
+        if batch_id:
+            queryset = queryset.filter(inventory__batch_id=batch_id)
+        
+        if location_id:
+            queryset = queryset.filter(
+                models.Q(from_location_id=location_id) | 
+                models.Q(to_location_id=location_id)
+            )
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 class DemandForecastViewSet(viewsets.ModelViewSet):
     queryset = DemandForecast.objects.all()
@@ -209,3 +285,53 @@ class DemandForecastViewSet(viewsets.ModelViewSet):
                                     break
         
         return Response({'suggestions': suggestions})
+
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        """Search inventory by medicine name, batch number, or location"""
+        query = request.query_params.get('q', '')
+        
+        if not query:
+            return Response({'error': 'Search query is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        results = Inventory.objects.filter(
+            models.Q(batch__medicine__name__icontains=query) |
+            models.Q(batch__batch_number__icontains=query) |
+            models.Q(location__name__icontains=query)
+        ).select_related('batch__medicine', 'location')
+        
+        serializer = self.get_serializer(results, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def expiring_soon(self, request):
+        """Get inventory items that are expiring soon"""
+        days = int(request.query_params.get('days', 90))
+        
+        from django.utils import timezone
+        from datetime import timedelta
+        expiry_threshold = timezone.now().date() + timedelta(days=days)
+        
+        expiring_items = Inventory.objects.filter(
+            batch__expiry_date__lte=expiry_threshold,
+            batch__expiry_date__gte=timezone.now().date(),
+            quantity__gt=0
+        ).select_related('batch__medicine', 'location')
+        
+        items = []
+        for item in expiring_items:
+            days_left = (item.batch.expiry_date - timezone.now().date()).days
+            items.append({
+                'id': item.id,
+                'medicine': item.batch.medicine.name,
+                'batch_number': item.batch.batch_number,
+                'location': item.location.name,
+                'quantity': item.quantity,
+                'expiry_date': item.batch.expiry_date,
+                'days_left': days_left,
+                'status': 'critical' if days_left < 30 else 'warning'
+            })
+        
+        items.sort(key=lambda x: x['days_left'])
+        
+        return Response(items)
