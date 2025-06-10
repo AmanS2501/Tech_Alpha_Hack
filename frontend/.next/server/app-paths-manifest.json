@@ -1,9 +1,4 @@
 {
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/forecasting/page": "app/forecasting/page.js",
-  "/inventory/page": "app/inventory/page.js",
-  "/page": "app/page.js",
-  "/pharmacy/page": "app/pharmacy/page.js",
-  "/production/page": "app/production/page.js",
-  "/redirection/page": "app/redirection/page.js"
+  "/page": "app/page.js"
 }
