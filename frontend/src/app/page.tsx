@@ -1,106 +1,132 @@
 'use client';
-//hello
-import { useState, useEffect } from 'react';
-import { DollarSign, Package, AlertTriangle, Truck, BarChart3, Activity } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { MetricCard } from '@/components/sections/dashboard/MetricCard';
-import Image from 'next/image';
-import { Skeleton } from '@/components/ui/skeleton';
+import { UserPlus, LogIn, Mail, Lock, User } from 'lucide-react';
 
-type RecentActivity = {
-  id: string;
-  timestamp: string;
-  eventType: string;
-  medicine: string;
-  details: string;
-  location?: string;
-};
+export default function AuthPage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-const mockRecentActivity: RecentActivity[] = [
-  { id: '1', timestamp: '2024-07-28 10:00 AM', eventType: 'New Batch', medicine: 'Amoxicillin 250mg', details: 'Batch #AMX250-001 added', location: 'Apex Pharma Inc.' },
-  { id: '2', timestamp: '2024-07-28 09:30 AM', eventType: 'Stock Update', medicine: 'Ibuprofen 400mg', details: '500 units received', location: 'City General Hospital' },
-  { id: '3', timestamp: '2024-07-27 05:00 PM', eventType: 'Resupply Request', medicine: 'Paracetamol 500mg', details: '1000 units requested', location: 'Downtown Pharmacy' },
-  { id: '4', timestamp: '2024-07-27 02:15 PM', eventType: 'Distribution', medicine: 'Metformin 500mg', details: 'Shipped 200 units to Valley Clinic', location: 'Central Stockists' },
-];
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    // Here you would implement actual login logic
+    setTimeout(() => {
+      // Set the isLoggedIn flag in localStorage
+      localStorage.setItem('isLoggedIn', 'true');
+      setIsLoading(false);
+      router.push('/dashboard'); // Changed from '/' to '/dashboard'
+    }, 1000);
+  };
 
-export default function DashboardPage() {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000); // Simulate data loading
-    return () => clearTimeout(timer);
-  }, []);
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    // Here you would implement actual registration logic
+    setTimeout(() => {
+      // Set the isLoggedIn flag in localStorage
+      localStorage.setItem('isLoggedIn', 'true');
+      setIsLoading(false);
+      // In handleLogin and handleRegister functions:
+      router.push('/dashboard');
+    }, 1000);
+  };
 
   return (
     <>
-      <PageHeader title="PharmaFlow Dashboard" description="Overview of medicine supply chain and stock levels." />
+      <PageHeader 
+        title="Authentication" 
+        description="Sign in to your account or create a new one."
+      />
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        <MetricCard title="Medicines in System" value={loading ? 0 : 1250} icon={Package} isLoading={loading} footer="+20 this week" />
-        <MetricCard title="Low Stock Alerts" value={loading ? 0 : 15} icon={AlertTriangle} isLoading={loading} footer="Across 8 pharmacies" />
-        <MetricCard title="Items in Transit" value={loading ? 0 : 78} icon={Truck} isLoading={loading} footer="3 new shipments today" />
-        <MetricCard title="Forecast Accuracy" value={loading ? "0%" : "92.5%"} icon={BarChart3} isLoading={loading} footer="For last 30 days" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
+      <div className="flex justify-center items-center py-10">
+        <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Recent Activity
-            </CardTitle>
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login" className="flex items-center gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Login
+                </TabsTrigger>
+                <TabsTrigger value="register" className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Register
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login" className="mt-4">
+                <form onSubmit={handleLogin}>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input id="email" placeholder="name@example.com" type="email" className="pl-10" required />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Password</Label>
+                        <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
+                      </div>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input id="password" type="password" className="pl-10" required />
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? 'Signing in...' : 'Sign In'}
+                    </Button>
+                  </div>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="register" className="mt-4">
+                <form onSubmit={handleRegister}>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="register-name">Full Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input id="register-name" placeholder="John Doe" className="pl-10" required />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input id="register-email" placeholder="name@example.com" type="email" className="pl-10" required />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-password">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input id="register-password" type="password" className="pl-10" required />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input id="confirm-password" type="password" className="pl-10" required />
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? 'Creating account...' : 'Create Account'}
+                    </Button>
+                  </div>
+                </form>
+              </TabsContent>
+            </Tabs>
           </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-2">
-                {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
-              </div>
-            ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Timestamp</TableHead>
-                  <TableHead>Event</TableHead>
-                  <TableHead>Medicine</TableHead>
-                  <TableHead>Details</TableHead>
-                  <TableHead>Location</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockRecentActivity.map((activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell className="text-xs">{activity.timestamp}</TableCell>
-                    <TableCell>{activity.eventType}</TableCell>
-                    <TableCell>{activity.medicine}</TableCell>
-                    <TableCell className="text-xs">{activity.details}</TableCell>
-                    <TableCell>{activity.location || 'N/A'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Supply Chain Insights</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Image 
-              src="https://placehold.co/600x400.png" 
-              alt="Supply Chain Visualization" 
-              width={600} 
-              height={400} 
-              className="rounded-md object-cover"
-              data-ai-hint="supply chain" 
-            />
-            <p className="mt-4 text-sm text-muted-foreground">
-              Visualizing the flow of medicines from manufacturers to consumers.
-              AI-powered analytics help optimize distribution and prevent shortages.
-            </p>
-          </CardContent>
         </Card>
       </div>
     </>

@@ -16,7 +16,7 @@ export type NavItem = {
 };
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard, matchSegments: 0 },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, matchSegments: 1 },
   { href: '/production', label: 'Production', icon: PackagePlus, matchSegments: 1 },
   { href: '/inventory', label: 'Inventory', icon: Boxes, matchSegments: 1 },
   { href: '/pharmacy', label: 'Pharmacy', icon: Building, matchSegments: 1 },
