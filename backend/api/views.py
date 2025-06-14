@@ -171,7 +171,7 @@ class StockMovementViewSet(viewsets.ModelViewSet):
             movement = StockMovement.objects.create(
                 inventory=source_inventory,
                 movement_type='transfer',
-                quantity_change=-quantity,  # Negative for outgoing
+                quantity_change=-quantity,
                 from_location_id=from_location_id,
                 to_location_id=to_location_id,
                 notes=notes,
