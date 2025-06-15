@@ -115,7 +115,7 @@ export default function RedirectionPage() {
     <>
       <PageHeader
         title="Redirection Suggestions"
-        description="Input data for stock redirection (AI features removed)."
+        // description="Input data for stock redirection (AI features removed)."
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
@@ -188,7 +188,7 @@ export default function RedirectionPage() {
         <Card className="md:sticky md:top-20 self-start">
           <CardHeader>
             <CardTitle>Output Area</CardTitle>
-            <CardDescription>Results would appear here (AI processing removed).</CardDescription>
+            {/* <CardDescription>Results would appear here (AI processing removed).</CardDescription> */}
           </CardHeader>
           <CardContent>
             {isLoading && ( // Show loader only when submitting

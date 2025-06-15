@@ -96,10 +96,10 @@ export default function DashboardPage() {
               className="rounded-md object-cover"
               data-ai-hint="supply chain" 
             />
-            <p className="mt-4 text-sm text-muted-foreground">
+            {/* <p className="mt-4 text-sm text-muted-foreground">
               Visualizing the flow of medicines from manufacturers to consumers.
               AI-powered analytics help optimize distribution and prevent shortages.
-            </p>
+            </p> */}
           </CardContent>
         </Card>
       </div>
