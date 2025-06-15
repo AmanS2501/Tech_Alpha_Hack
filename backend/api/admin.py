@@ -1,4 +1,5 @@
 from django.contrib import admin
+from .models import Medicine, Manufacturer, ProductionBatch, Location, Inventory, ResupplyRequest, StockMovement, DemandForecast, UserProfile
 
 @admin.register(Medicine)
 class MedicineAdmin(admin.ModelAdmin):

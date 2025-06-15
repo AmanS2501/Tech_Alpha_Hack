@@ -15,31 +15,25 @@ import { NAV_ITEMS } from '@/lib/constants';
 import Link from 'next/link';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
+import { useAuth } from '@/lib/auth-context';
+
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout, user } = useAuth(); // Use the auth context
   const currentNavItem = NAV_ITEMS.find(item => {
     if (item.href === '/') return pathname === '/';
     return pathname.startsWith(item.href);
   });
   const pageTitle = currentNavItem?.label || "PharmaFlow";
   
-  // Mock user state - in a real app, this would come from your auth context
-  const isLoggedIn = true; // For demonstration purposes
-  const user = {
-    name: 'John Doe',
-    initials: 'JD',
-    role: 'Pharmacist'
-  };
+  // No need for mock user state, use the real user from auth context
+  const isLoggedIn = !!user;
+  const userInitials = user ? `${user.first_name[0]}${user.last_name[0]}` : 'U';
 
   const handleLogout = () => {
-    // Clear the authentication state
-    localStorage.removeItem('isLoggedIn');
-    // Or set it to false
-    // localStorage.setItem('isLoggedIn', 'false');
-    
-    // Then redirect to auth page
-    router.push('/auth');
+    logout(); // Use the auth context's logout function
+    router.push('/'); // Redirect to root (auth page)
   };
 
   return (
@@ -59,15 +53,15 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full" aria-label="User menu">
                   <Avatar>
-                    <AvatarFallback>{user.initials}</AvatarFallback>
+                    <AvatarFallback>{userInitials}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.role}</p>
+                    <p className="text-sm font-medium leading-none">{`${user.first_name} ${user.last_name}`}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

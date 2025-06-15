@@ -1,35 +1,24 @@
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+'use client';
+
 import './globals.css';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { AuthProvider } from '@/lib/auth-context';
 import { AuthCheck } from '@/components/layout/AuthCheck';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
-
-export const metadata: Metadata = {
-  title: 'PharmaFlow',
-  description: 'AI-powered Medicine Flow and Distribution Tracking',
-};
+import { AppLayout } from '@/components/layout/AppLayout';
+import { usePathname } from 'next/navigation';
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="antialiased">
-        <AuthCheck>
-          <AppLayout>{children}</AppLayout>
-        </AuthCheck>
+    <html lang="en">
+      <body>
+        <AuthProvider>
+          <AuthCheck>
+            <AppLayout>{children}</AppLayout>
+          </AuthCheck>
+        </AuthProvider>
       </body>
     </html>
   );

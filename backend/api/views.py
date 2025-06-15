@@ -1,14 +1,40 @@
 from django.shortcuts import render
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, generics, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from datetime import datetime, timedelta
 import json
+from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser
+from .ai.forecasting import generate_forecast_from_csv
 
 from .models import Medicine, Manufacturer, ProductionBatch, Location, Inventory, StockMovement, ResupplyRequest, DemandForecast
 from .serializers import MedicineSerializer, ManufacturerSerializer, ProductionBatchSerializer, LocationSerializer, InventorySerializer, ResupplyRequestSerializer, StockMovementSerializer, DemandForecastSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth.models import User
+from .serializers import UserSerializer, RegisterSerializer, MyTokenObtainPairSerializer
+from .permissions import IsManufacturer, IsStockist, IsPharmacist, IsManufacturerOrStockist, IsStockistOrPharmacist
+from .models import UserProfile
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [permissions.AllowAny]
+    serializer_class = RegisterSerializer
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAdminUser]
+    
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
 
 class MedicineViewSet(viewsets.ModelViewSet):
     queryset = Medicine.objects.all()
@@ -217,6 +243,7 @@ class StockMovementViewSet(viewsets.ModelViewSet):
 class DemandForecastViewSet(viewsets.ModelViewSet):
     queryset = DemandForecast.objects.all()
     serializer_class = DemandForecastSerializer
+    parser_classes = [MultiPartParser]
 
     @action(detail=False, methods=['post'])
     def generate_forecast(self, request):
@@ -239,6 +266,40 @@ class DemandForecastViewSet(viewsets.ModelViewSet):
             })
         
         return Response({'forecasts': forecasts})
+    
+    @action(detail=False, methods=['post'])
+    def upload_csv_forecast(self, request):
+        file = request.FILES.get('file')
+        medicine_id = request.data.get('medicine_id')
+        location_id = request.data.get('location_id')
+
+        if not file:
+            return Response({'error': 'No CSV file uploaded'}, status=400)
+
+        try:
+            csv_content = file.read().decode('utf-8')
+            forecasted_data = generate_forecast_from_csv(csv_content)
+
+            # Save predictions to database
+            saved = []
+            for row in forecasted_data:
+                obj, created = DemandForecast.objects.update_or_create(
+                    medicine_id=medicine_id,
+                    location_id=location_id,
+                    forecast_date=row['ds'],
+                    defaults={
+                        'predicted_demand': row['yhat'],
+                        'confidence_level': 0.95
+                    }
+                )
+                saved.append({
+                    'date': row['ds'],
+                    'predicted_demand': row['yhat']
+                })
+
+            return Response({'forecast': saved})
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
 
     def _calculate_demand(self, historical_data, medicine, location):
         relevant_data = [
